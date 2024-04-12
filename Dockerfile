@@ -4,11 +4,16 @@ FROM ubuntu:${UBUNTU_VERSION} as base
 ARG GCC_VERSION
 ARG CLANG_VERSION
 RUN set -x && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && \
     apt-get update && \
     apt-get install -y -q apt-utils dialog && \
-    apt-get install -y -q sudo aptitude flex bison libncurses5-dev make git exuberant-ctags sparse bc libssl-dev libelf-dev bsdmainutils && \
+    apt-get install -y -q sudo aptitude flex bison libncurses5-dev make git exuberant-ctags sparse bc libssl-dev libelf-dev build-essential bc rsync libncurses-dev dwarves bsdmainutils libpopt-dev libtrace3-dev libbabeltrace-dev libpfm4-dev libzstd-dev python3-setuptools libcapstone-dev libperl-dev systemtap-sdt-dev python3-dev && \
+    apt-get build-dep linux -y -q && \
+    if [ "$GCC_VERSION" == "11" || "$GCC_VERSION" == "12" || "$GCC_VERSION" == "13" ]; then \
+      apt-get install -y -q python-is-python3; \
+    fi; \
     if [ "$GCC_VERSION" ]; then \
-      apt-get install -y -q gcc-${GCC_VERSION} g++-${GCC_VERSION} gcc-${GCC_VERSION}-plugin-dev gcc g++ \
+      apt-get install -y -q python gcc-${GCC_VERSION} g++-${GCC_VERSION} gcc-${GCC_VERSION}-plugin-dev gcc g++ \
         gcc-${GCC_VERSION}-aarch64-linux-gnu g++-${GCC_VERSION}-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
         gcc-${GCC_VERSION}-arm-linux-gnueabi g++-${GCC_VERSION}-arm-linux-gnueabi gcc-arm-linux-gnueabi g++-arm-linux-gnueabi && \
       if [ "$GCC_VERSION" != "4.9" ]; then \
